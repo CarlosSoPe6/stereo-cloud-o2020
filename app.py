@@ -2,6 +2,7 @@
 Módulo de procesamiento de imágenes.
 @author Carlos Soto Pérez <carlos348@outlook.com>
 """
+from threading import main_thread
 import boto3
 import json
 import os
@@ -67,12 +68,17 @@ def process_img():
 
     out_name = time.time_ns() + '.png'
     out_path = '/app/' + out_name
+
     cv2.imwrite(out_path, disparity)
     data = open(out_path, 'r+b')
-    s3.put_object(Bucket=BUCKET_NAME, Body=data, Key=out_name)
+    s3.put_object(Bucket=BUCKET_NAME, Body=data, Key='outputs/' + out_name)
     os.remove(out_path)
     response = {
         'key': out_name
     }
 
     return response
+
+
+if __name__ == "__main__":
+    app.run(debug=True, port=80, host='0.0.0.0')
