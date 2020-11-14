@@ -45,20 +45,17 @@ def get_disparity(left, right, max_disp=-1, wsize=-1):
 @app.route('/process_img', methods=['POST'])
 def process_img():
     body = request.get_json()
+    print(body)
     left = body['left']
     right = body['right']
-    path_left = '/app/' + left
-    path_right = '/app/' + right
+    path_left = './' + left
+    path_right = './' + right
     s3 = get_s3_client()
     # Crear imagen left
-    open(path_left, 'a').close()
-    with open(path_left, 'r+b') as f:
-        s3.download_fileobj(BUCKET_NAME, left, f)
+    s3.download_file(BUCKET_NAME, left, path_left)
 
     # Crear imagen right
-    open(path_right, 'a').close()
-    with open(path_right, 'r+b') as f:
-        s3.download_fileobj('stereo-cloud-o2020', right, f)
+    s3.download_file(BUCKET_NAME, right, path_right)
     
     l = cv2.imread(path_left)
     r = cv2.imread(path_right)
@@ -66,8 +63,8 @@ def process_img():
     os.remove(path_left)
     os.remove(path_right)
 
-    out_name = time.time_ns() + '.png'
-    out_path = '/app/' + out_name
+    out_name = str(time.time_ns()) + '.png'
+    out_path = './' + out_name
 
     cv2.imwrite(out_path, disparity)
     data = open(out_path, 'r+b')
@@ -81,4 +78,4 @@ def process_img():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=80, host='0.0.0.0')
+    app.run(debug=True, port=8000, host='127.0.0.1')
